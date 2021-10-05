@@ -56,8 +56,8 @@ instance Functor List where
     (a -> b)
     -> List a
     -> List b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance List"
+  (<$>) f Nil = Nil
+  (<$>) f (x:.xs) = (f x) :. (f <$> xs)
 
 -- | Maps a function on the Optional functor.
 --
@@ -71,8 +71,8 @@ instance Functor Optional where
     (a -> b)
     -> Optional a
     -> Optional b
-  (<$>) =
-    error "todo: Course.Functor (<$>)#instance Optional"
+  (<$>) f (Full a) = Full $ f a
+  (<$>) _ Empty= Empty
 
 -- | Maps a function on the reader ((->) t) functor.
 --

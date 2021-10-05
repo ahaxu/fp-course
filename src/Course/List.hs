@@ -170,8 +170,8 @@ filter =
   List a
   -> List a
   -> List a
-(++) =
-  error "todo: Course.List#(++)"
+(++) xs ys =
+  foldRight (\x ys' -> x :. ys') ys xs
 
 infixr 5 ++
 
@@ -188,8 +188,8 @@ infixr 5 ++
 flatten ::
   List (List a)
   -> List a
-flatten =
-  error "todo: Course.List#flatten"
+flatten xxs=
+  foldRight (\xs acc  -> xs ++ acc) Nil xxs
 
 -- | Map a function then flatten to a list.
 --

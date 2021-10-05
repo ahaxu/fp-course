@@ -48,8 +48,9 @@ instance Monad List where
     (a -> List b)
     -> List a
     -> List b
-  (=<<) =
-    error "todo: Course.Monad (=<<)#instance List"
+  (=<<) f xs = 
+    let x = f <$> xs
+    in flatten x
 
 -- | Binds a function on an Optional.
 --
@@ -134,8 +135,8 @@ join ::
   k (k a)
   -> k a
 join =
-  error "todo: Course.Monad#join"
-
+   (=<<) id 
+  
 -- | Implement a flipped version of @(=<<)@, however, use only
 -- @join@ and @(<$>)@.
 -- Pronounced, bind flipped.
@@ -147,8 +148,9 @@ join =
   k a
   -> (a -> k b)
   -> k b
-(>>=) =
-  error "todo: Course.Monad#(>>=)"
+(>>=) ka f =
+  let x = f <$> ka
+  in join x
 
 infixl 1 >>=
 
