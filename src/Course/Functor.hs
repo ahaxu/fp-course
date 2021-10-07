@@ -88,19 +88,27 @@ instance Functor ((->) t) where
 
 -- | Anonymous map. Maps a constant value on a functor.
 --
--- >>> 7 <$ (1 :. 2 :. 3 :. Nil)
+-- >>> 7 $> (1 :. 2 :. 3 :. Nil)
 -- [7,7,7]
 --
--- prop> \x a b c -> x <$ (a :. b :. c :. Nil) == (x :. x :. x :. Nil)
+-- prop> \x a b c -> x $> (a :. b :. c :. Nil) == (x :. x :. x :. Nil)
 --
--- prop> \x q -> x <$ Full q == Full x
+-- prop> \x q -> x $> Full q == Full x
 (<$) ::
   Functor k =>
   a
   -> k b
   -> k a
-(<$) =
-  error "todo: Course.Functor#(<$)"
+(<$) a kb =
+  (\_ -> a)<$> kb
+
+($>) ::
+  Functor k =>
+  b
+  -> k a
+  -> k b 
+($>) b ka =
+  (\_ -> b) <$> ka
 
 -- | Anonymous map producing unit value.
 --

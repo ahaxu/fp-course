@@ -334,12 +334,18 @@ lift1 f ka =
 --
 -- >>> sequence ((*10) :. (+2) :. Nil) 6
 -- [60,8]
+--
+-- foldRight way
+-- foldRight (\ka rs-> lift2 (:.) ka rs) (pure Nil) kas
+
 sequence ::
   Applicative k =>
   List (k a)
   -> k (List a)
-sequence =
-  error "todo: Course.Applicative#sequence"
+sequence Nil = pure Nil
+sequence (ka :. kas) =
+    foldRight (\ka rs-> lift2 (:.) ka rs) (pure Nil) kas
+
 
 -- | Replicate an effect a given number of times.
 --
@@ -364,8 +370,10 @@ replicateA ::
   Int
   -> k a
   -> k (List a)
-replicateA =
-  error "todo: Course.Applicative#replicateA"
+replicateA n ka =
+    let as = replicate n ka
+    in sequence as
+  
 
 -- | Filter a list with a predicate that produces an effect.
 --

@@ -407,7 +407,7 @@ list1 pa =
 spaces1 ::
   Parser Chars
 spaces1 =
-  error "todo: Course.Parser#spaces1"
+  list1 space 
 
 -- | Return a parser that produces a lower-case character but fails if
 --
@@ -419,7 +419,7 @@ spaces1 =
 lower ::
   Parser Char
 lower =
-  error "todo: Course.Parser#lower"
+  satisfy isLower
 
 -- | Return a parser that produces an upper-case character but fails if
 --
@@ -431,7 +431,7 @@ lower =
 upper ::
   Parser Char
 upper =
-  error "todo: Course.Parser#upper"
+    satisfy isUpper
 
 -- | Return a parser that produces an alpha character but fails if
 --
@@ -443,7 +443,7 @@ upper =
 alpha ::
   Parser Char
 alpha =
-  error "todo: Course.Parser#alpha"
+  satisfy isAlpha
 
 -- | Return a parser that sequences the given list of parsers by producing all their results
 -- but fails on the first failing parser of the list.
@@ -456,11 +456,15 @@ alpha =
 --
 -- >>> isErrorResult (parse (sequenceParser (character :. is 'x' :. upper :. Nil)) "abCdef")
 -- True
+-- foldRight (\p rs -> lift2 (:.) p rs) (pure Nil) ps
 sequenceParser ::
   List (Parser a)
-  -> Parser (List a)
-sequenceParser =
-  error "todo: Course.Parser#sequenceParser"
+  -> Parser (List a) -- Input -> Result remainingInput (List a)
+sequenceParser Nil = pure Nil
+sequenceParser (p :. pas) = do
+    a <- p
+    as <- sequenceParser pas 
+    pure $ a :. as
 
 -- | Return a parser that produces the given number of values off the given parser.
 -- This parser fails if the given parser fails in the attempt to produce the given number of values.
@@ -472,12 +476,19 @@ sequenceParser =
 --
 -- >>> isErrorResult (parse (thisMany 4 upper) "ABcDef")
 -- True
+--
+--  replicateA ::
+--  Applicative k =>
+--  Int
+--  -> k a
+--  -> k (List a)
 thisMany ::
   Int
   -> Parser a
   -> Parser (List a)
-thisMany =
-  error "todo: Course.Parser#thisMany"
+thisMany n pa=
+  let as = replicate n pa
+  in sequenceParser as
 
 -- | This one is done for you.
 --
@@ -509,8 +520,15 @@ ageParser =
 -- True
 firstNameParser ::
   Parser Chars
-firstNameParser =
-  error "todo: Course.Parser#firstNameParser"
+firstNameParser = do
+    x <- upper
+    xs <- list lower
+    pure $ x :. xs
+--  upper >>= \uc ->
+--  list lower >>= \lcs ->
+--    let rs = uc :. lcs
+--    in pure rs
+--
 
 -- | Write a parser for Person.surname.
 --
@@ -531,8 +549,11 @@ firstNameParser =
 -- True
 surnameParser ::
   Parser Chars
-surnameParser =
-  error "todo: Course.Parser#surnameParser"
+surnameParser = 
+    upper               >>= \x   ->
+    thisMany 5 lower    >>= \xs  ->
+    list lower          >>= \xs' ->
+        pure $ (x :. xs) ++ xs'
 
 -- | Write a parser for Person.smoker.
 --
@@ -551,7 +572,8 @@ surnameParser =
 smokerParser ::
   Parser Bool
 smokerParser =
-  error "todo: Course.Parser#smokerParser"
+  True <$ is 'y' ||| False <$ is 'n'
+ 
 
 -- | Write part of a parser for Person#phoneBody.
 -- This parser will only produce a string of digits, dots or hyphens.
@@ -573,7 +595,7 @@ smokerParser =
 phoneBodyParser ::
   Parser Chars
 phoneBodyParser =
-  error "todo: Course.Parser#phoneBodyParser"
+  list $ digit ||| is '-' ||| is '.'
 
 -- | Write a parser for Person.phone.
 --
@@ -595,7 +617,10 @@ phoneBodyParser =
 phoneParser ::
   Parser Chars
 phoneParser =
-  error "todo: Course.Parser#phoneParser"
+  digit >>= \h ->
+  phoneBodyParser >>= \body ->
+  is '#' >>= \t -> pure $ (h :. body) ++ (t :. Nil)
+
 
 -- | Write a parser for Person.
 --
@@ -611,7 +636,7 @@ phoneParser =
 --
 -- /Tip:/ Follow-on exercise: Use *(<*>)* instead of @(>>=)@.
 --
--- /Tip:/ Follow-on exercise: Use *(<*>~)* instead of @(<*>)@ and @(*>)@.
+-- /Tip:/ Follow-on exercise: U instead of @(<*>)@ and @(*>)@.
 --
 -- >>> isErrorResult (parse personParser "")
 -- True
@@ -653,7 +678,17 @@ phoneParser =
 personParser ::
   Parser Person
 personParser =
-  error "todo: Course.Parser#personParser"
+  ageParser >>= \age ->
+  spaces1 >>
+  firstNameParser >>= \fName ->
+  spaces1 >>
+  surnameParser >>= \sName ->
+  spaces1 >>
+  smokerParser >>= \isSmoker ->
+  spaces1 >>
+  phoneParser >>= \phone ->
+    pure $ Person age fName sName isSmoker phone
+
 
 -- Make sure all the tests pass!
 
