@@ -56,7 +56,7 @@ instance Functor List where
     (a -> b)
     -> List a
     -> List b
-  (<$>) f Nil = Nil
+  (<$>) _ Nil = Nil
   (<$>) f (x:.xs) = (f x) :. (f <$> xs)
 
 -- | Maps a function on the Optional functor.
@@ -127,8 +127,8 @@ void ::
   Functor k =>
   k a
   -> k ()
-void =
-  error "todo: Course.Functor#void"
+void ka =
+  (\_ -> ()) <$> ka
 
 -----------------------
 -- SUPPORT LIBRARIES --
