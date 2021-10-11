@@ -78,7 +78,7 @@ toSpecialCharacter c =
               ('"' , DoubleQuote) :.
               ('\\', Backslash) :.
               Nil
-  in snd <$> find ((==) c . fst) table
+  in snd <$> find (\(c', _) -> c' == c) table
 
 -- | Parse a JSON string. Handle double-quotes, special characters, hexadecimal characters. See http://json.org for the full list of control characters in JSON.
 --

@@ -131,14 +131,17 @@ instance Applicative ((->) t) where
   pure ::
     a
     -> ((->) t a)
-  pure =
-    error "todo: Course.Applicative pure#((->) t)"
+  pure a =
+    const a
+
   (<*>) ::
-    ((->) t (a -> b))
-    -> ((->) t a)
-    -> ((->) t b)
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance ((->) t)"
+    (t -> (a -> b))
+    -> (t -> a)
+    -> t -> b
+
+  (<*>) tab ta t=
+    let x = tab t (ta t)
+    in x
 
 
 -- | Apply a binary function in the environment.
@@ -342,10 +345,8 @@ sequence ::
   Applicative k =>
   List (k a)
   -> k (List a)
-sequence Nil = pure Nil
-sequence (ka :. kas) =
-    foldRight (\ka rs-> lift2 (:.) ka rs) (pure Nil) kas
-
+sequence kas =
+    foldRight (\ka' kas' -> lift2 (:.) ka' kas') (pure Nil) kas
 
 -- | Replicate an effect a given number of times.
 --
