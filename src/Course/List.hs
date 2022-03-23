@@ -57,7 +57,7 @@ foldRight f b (h :. t) = f h (foldRight f b t)
 
 foldLeft :: (b -> a -> b) -> b -> List a -> b
 foldLeft _ b Nil      = b
-foldLeft f b (h :. t) = let b' = f b h in b' `seq` foldLeft f b' t
+foldLeft f b (h :. t) = let b' = f b h in foldLeft f b' t
 
 -- END Helper functions and data types
 
@@ -93,7 +93,7 @@ product ::
   List Int
   -> Int
 product =
-  error "todo: Course.List#product"
+  foldRight (*) 1
 
 -- | Sum the elements of the list.
 --
@@ -108,7 +108,13 @@ sum ::
   List Int
   -> Int
 sum =
-  error "todo: Course.List#sum"
+  foldRight (+) 0
+
+sum' ::
+ List Int
+ -> Int
+sum' Nil = 0
+sum' (x :. xs) = x + sum xs
 
 -- | Return the length of the list.
 --
@@ -120,7 +126,7 @@ length ::
   List a
   -> Int
 length =
-  error "todo: Course.List#length"
+  foldRight (P.const (+1)) 0
 
 -- | Map the given function on each element of the list.
 --
@@ -134,8 +140,9 @@ map ::
   (a -> b)
   -> List a
   -> List b
-map =
-  error "todo: Course.List#map"
+map f Nil = Nil
+map f (x :. xs) = f x :. map f xs 
+  
 
 -- | Return elements satisfying the given predicate.
 --
@@ -151,8 +158,13 @@ filter ::
   (a -> Bool)
   -> List a
   -> List a
-filter =
-  error "todo: Course.List#filter"
+filter p =
+  foldRight
+    (\a acc ->
+      if p a
+      then a :. acc
+      else acc)
+    Nil 
 
 -- | Append two lists to a new list.
 --
