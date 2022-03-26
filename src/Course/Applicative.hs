@@ -49,13 +49,13 @@ instance Applicative ExactlyOne where
     a
     -> ExactlyOne a
   pure =
-    error "todo: Course.Applicative pure#instance ExactlyOne"
+    ExactlyOne
   (<*>) ::
     ExactlyOne (a -> b)
     -> ExactlyOne a
     -> ExactlyOne b
-  (<*>) =
-    error "todo: Course.Applicative (<*>)#instance ExactlyOne"
+  (<*>) (ExactlyOne ab) (ExactlyOne a) =
+    ExactlyOne $ ab a
 
 -- | Insert into a List.
 --
@@ -67,14 +67,14 @@ instance Applicative List where
   pure ::
     a
     -> List a
-  pure =
-    error "todo: Course.Applicative pure#instance List"
+  pure a =
+    a :. Nil
   (<*>) ::
     List (a -> b)
     -> List a
     -> List b
-  (<*>) =
-    error "todo: Course.Apply (<*>)#instance List"
+  (<*>) fs as = 
+    flatMap (\a -> (\f -> f a) <$> fs) as
 
 -- | Insert into an Optional.
 --
@@ -158,8 +158,9 @@ lift2 ::
   -> k a
   -> k b
   -> k c
-lift2 =
-  error "todo: Course.Applicative#lift2"
+lift2 f ka kb =
+  let kbc = f <$> ka
+  in kbc <*> kb 
 
 -- | Apply a ternary function in the environment.
 -- /can be written using `lift2` and `(<*>)`./
