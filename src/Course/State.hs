@@ -190,15 +190,17 @@ firstRepeat ::
   List a
   -> Optional a
 firstRepeat as =
-  eval
-    (findM (
-        \a -> State $ \s ->
-            if P.elem a s
-            then (True, s)
-            else (False, S.insert a s)
-        ) as
-    )
-    S.empty 
+    eval
+        (findM
+            (\a ->
+                State $ \s ->
+                    if P.elem a s /= True
+                    then (False, S.insert a s)
+                    else (True, s)
+            )
+            as
+        )
+        S.empty
 
 -- | Remove all duplicate elements in a `List`.
 -- /Tip:/ Use `filtering` and `State` with a @Data.Set#Set@.
@@ -210,8 +212,17 @@ distinct ::
   Ord a =>
   List a
   -> List a
-distinct =
-  error "todo: Course.State#distinct"
+distinct as =
+  eval
+    (filtering
+        (\a -> State $ \s ->
+            if P.elem a s /= True
+            then (False, S.insert a s)
+            else (True, s)
+        )
+        as
+    )
+    S.empty
 
 -- | A happy number is a positive integer, where the sum of the square of its digits eventually reaches 1 after repetition.
 -- In contrast, a sad number (not a happy number) is where the sum of the square of its digits never reaches 1
@@ -237,5 +248,18 @@ distinct =
 isHappy ::
   Integer
   -> Bool
-isHappy =
-  error "todo: Course.State#isHappy"
+isHappy n =
+    let
+        fr = firstRepeat $
+                produce (
+                    \n' -> toInteger . sum $ square . digitToInt <$> show' n'
+                ) n
+    in if fr == (Full 1) then True else False 
+    
+
+-- join :: f f a -> f a
+-- join :: (r -> r -> a) -> r -> a
+-- join f r = a with f :: r -> r -> a ,so apply r r to f, we have f r r = a
+-- join f r = f r r
+square:: Int -> Int
+square = join (*)

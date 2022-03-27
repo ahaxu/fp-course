@@ -73,8 +73,11 @@ instance Monad ((->) t) where
     (a -> ((->) t b))
     -> ((->) t a)
     -> ((->) t b)
-  (=<<) =
-    error "todo: Course.Monad (=<<)#instance ((->) t)"
+  (=<<) atb ta 
+        = \t ->
+            let a= ta t 
+                tb = atb a
+            in tb t
 
 -- | Witness that all things with (=<<) and (<$>) also have (<*>).
 --
@@ -112,8 +115,10 @@ instance Monad ((->) t) where
   k (a -> b)
   -> k a
   -> k b
-(<**>) =
-  error "todo: Course.Monad#(<**>)"
+(<**>) kab ka=
+  kab >>= \ab ->
+  ka  >>= \a -> return $ ab a
+    
 
 infixl 4 <**>
 
@@ -134,8 +139,8 @@ join ::
   Monad k =>
   k (k a)
   -> k a
-join kka =
-   kka >>= id
+join =
+   (=<<) id 
 
 -- | Implement a flipped version of @(=<<)@, however, use only
 -- @join@ and @(<$>)@.

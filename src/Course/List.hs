@@ -116,7 +116,7 @@ sum ::
   List Int
   -> Int
 sum =
-  error "todo: Course.List#sum"
+  foldRight (+) 0 
 
 -- | Return the length of the list.
 --
@@ -324,8 +324,8 @@ produce ::
   (a -> a)
   -> a
   -> List a
-produce f x =
-  error "todo: Course.List#produce"
+produce f a = a :. produce f (f a)
+   
 
 -- | Do anything other than reverse a list.
 -- Is it even possible?
