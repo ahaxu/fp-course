@@ -85,38 +85,34 @@ printFile ::
   FilePath
   -> Chars
   -> IO ()
-printFile fp content =
-  putStrLn ("============" ++ fp) >> 
+printFile fp content = do
+  putStrLn $ "========== " ++ fp
   putStrLn content
-
+ 
 -- Given a list of (file name and file contents), print each.
 -- Use @printFile@.
 printFiles ::
   List (FilePath, Chars)
   -> IO ()
-printFiles xs = 
-  let
-    ios = (\(fp, content) -> printFile fp content) <$> xs
-  in void $ sequence ios
-
+printFiles fpAndContent = 
+  (void . sequence) $ (\(fp, c)-> printFile fp c) <$> fpAndContent
+ 
 -- Given a file name, return (file name and file contents).
 -- Use @readFile@.
 getFile ::
   FilePath
   -> IO (FilePath, Chars)
 getFile fp = do
-  content <- readFile fp 
-  pure (fp, content)
-
+  content <-readFile fp
+  return (fp, content)
+ 
 -- Given a list of file names, return list of (file name and file contents).
 -- Use @getFile@.
 getFiles ::
   List FilePath
   -> IO (List (FilePath, Chars))
-getFiles fps =
-    let fileNameAndFileContents = getFile <$> fps
-    in sequence fileNameAndFileContents
-  
+getFiles =
+  sequence . (map getFile) 
 
 -- Given a file name, read it and for each line in that file, read and print contents of each.
 -- Use @getFiles@, @lines@, and @printFiles@.
@@ -125,18 +121,17 @@ run ::
   -> IO ()
 run fp = do
   content <- readFile fp
-  rs <- getFiles (lines content)
-  printFiles rs
-
--- /Tip:/ use @getArgs@ and @run@
+  listOfFilePathWithContent <- getFiles (lines content)
+  printFiles listOfFilePathWithContent  
+ 
+ -- /Tip:/ use @getArgs@ and @run@
 main ::
   IO ()
-main = 
-  getArgs >>= \args ->
-    case args of
-        fn :. Nil -> run fn 
-        _ -> error "ooops!"
-  
+main =  do
+  args <- getArgs
+  case args of
+    file :. _ -> run file
+    Nil -> putStrLn "no input file"
 
 ----
 
