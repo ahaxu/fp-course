@@ -96,8 +96,16 @@ instance Monad k => Monad (StateT s k) where
     (a -> StateT s k b)
     -> StateT s k a
     -> StateT s k b
-  (=<<) =
-    error "todo: Course.StateT (=<<)#instance (StateT s k)"
+  (=<<) f (StateT skas) =
+    StateT $ \s ->
+        let
+            kas = skas s
+            kkbs = (
+                \(a,s')->
+                    runStateT (f a) s' 
+                ) <$> kas
+        in join kkbs
+
 
 -- | A `State'` is `StateT` specialised to the `ExactlyOne` functor.
 type State' s a =
@@ -110,8 +118,9 @@ type State' s a =
 state' ::
   (s -> (a, s))
   -> State' s a
-state' =
-  error "todo: Course.StateT#state'"
+--state' f = StateT (\s -> ExactlyOne $ f s)
+state' = StateT . (ExactlyOne .) 
+
 
 -- | Provide an unwrapper for `State'` values.
 --
@@ -122,7 +131,7 @@ runState' ::
   -> s
   -> (a, s)
 runState' =
-  error "todo: Course.StateT#runState'"
+    (runExactlyOne .) . runStateT
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting state.
 --
@@ -133,8 +142,9 @@ execT ::
   StateT s k a
   -> s
   -> k s
-execT =
-  error "todo: Course.StateT#execT"
+execT st s =
+    snd <$> runStateT st s 
+  
 
 -- | Run the `State'` seeded with `s` and retrieve the resulting state.
 --
@@ -144,8 +154,8 @@ exec' ::
   State' s a
   -> s
   -> s
-exec' =
-  error "todo: Course.StateT#exec'"
+exec' st s =
+  snd . runExactlyOne $ runStateT st s 
 
 -- | Run the `StateT` seeded with `s` and retrieve the resulting value.
 --
